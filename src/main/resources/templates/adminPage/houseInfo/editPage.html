@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新增</title>
+    <link rel="stylesheet" th:href="@{/adminStatic/layui/css/layui.css}">
+    <script th:src="@{/webjars/layui/2.5.6/layui.js}" src="" type="text/javascript"></script>
+    <script th:src="@{/webjars/jquery/3.5.1/jquery.js}" src="" type="text/javascript"></script>
+    <style>
+        html {
+            height: 100%;
+        }
+
+        .layui-form-pane .layui-form-text .layui-textarea {
+            min-height: 80px;
+            max-height: 80px;
+        }
+
+        .div_show {
+            transform: translate(-2000px);
+            transition: all 0.8s;
+        }
+
+        .div_hide {
+            transform: translate(2000px);
+            transition: all 1.5s;
+        }
+
+        .photo-viewer {
+            margin: 50px 0;
+            text-align: center;
+        }
+
+        .img-reveal {
+            display: inline-block;
+            margin: 0px 8px;
+        }
+
+        .layui-btn {
+            height: 34px;
+            line-height: 34px;
+        }
+        .layui-form-select dl {
+            max-height: 195px;
+        }
+    </style>
+</head>
+<body style="height: 100%;padding: 15px;box-sizing: border-box">
+
+<!--表单-->
+<form class="layui-form layui-form-pane form-info addForm" action="" th:add-url="${addUrl}">
+    <div id="product_info" style="width:100%">
+        <!-- 所属楼宇 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">所属楼宇</label>
+            <div class="layui-input-inline" lay-verify="required" >
+                <select name="parentBuilding" lay-verify="required" lay-search lay-filter="buildingNum">
+                    <option value="">选择或搜索楼号 (必填)</option>
+                    <option th:each="item:${buildingList}"
+                            th:text="${item.buildingNum+'号楼'}"
+                            th:value="${item.buildingNum}"
+                            th:selected="${item.buildingNum+'' == obj.parentBuilding}"></option>
+                </select>
+            </div>
+        </div>
+        <!-- 所属单元 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">所属单元</label>
+            <div class="layui-input-inline">
+                <select name="parentUnit" lay-verify="required" lay-search id="unitSelect">
+                    <option value="">请选择所属单元 (必填)</option>
+                    <option th:value="${i}" th:each="i:${#numbers.sequence(1,maxUnit)}"
+                            th:text="${i+'单元'}"
+                            th:selected="${i+'' == obj.parentUnit}"></option>
+                </select>
+            </div>
+        </div>
+        <!-- 所属楼层 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">所属楼层</label>
+            <div class="layui-input-inline">
+                <select name="parentFloor" lay-verify="required" lay-search id="floorSelect">
+                    <option value="">请选择所属楼层 (必填)</option>
+                    <option th:value="${i}" th:each="i:${#numbers.sequence(1,maxFloor)}"
+                            th:text="${i+'楼'}"
+                            th:selected="${i+'' == obj.parentFloor}"></option>
+                </select>
+            </div>
+        </div>
+        <!-- 房间号 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">房间号</label>
+            <div class="layui-input-inline">
+                <input type="text" name="houseNum" lay-verify="required" placeholder="请填写房间号 (必填)" autocomplete="off"
+                       class="layui-input" th:value="${obj.houseNum}">
+            </div>
+        </div>
+        <!-- 房间大小 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">房间面积</label>
+            <div class="layui-input-inline">
+                <input type="text" name="houseArea" lay-verify="required" placeholder="房间面积 (选填, 填写整数)" autocomplete="off"
+                       class="layui-input" th:value="${obj.houseArea}">
+            </div>
+        </div>
+        <!-- 房间户型 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">房间户型</label>
+            <div class="layui-input-inline">
+                <input type="text" name="houseType" lay-verify="required" placeholder="请填写房间户型 (选填)" autocomplete="off"
+                       class="layui-input" th:value="${obj.houseType}">
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" name="id" th:value="${obj.id}">
+    <input type="hidden" name="isSold" th:value="${obj.isSold}">
+    <input type="hidden" name="ownerName" th:value="${obj.ownerName}">
+    <input type="hidden" name="phone" th:value="${obj.phone}">
+
+    <div class="content-input" style="position: absolute; left: 15px; bottom: 15px;">
+        <input type="button" value="提交" name="submit" class="layui-btn addBtn layui-btn-normal">
+        <input type="reset" class="layui-btn layui-btn-normal" value="清空">
+    </div>
+</form>
+
+
+<script>
+    layui.use(['form', 'upload', 'laydate'], function () {
+        var layer = layui.layer
+            , laydate = layui.laydate
+            , form = layui.form;
+
+        var lock = true;
+
+
+        /**
+         * 点击单元楼后 单元数和楼层进行级联显示
+         */
+        form.on('select(buildingNum)', function(data){
+            var id = data.value;
+            $.getJSON(
+                '../building/getInfoByBuildingNum?buildingNum='+id
+                ,function (res) {
+                    // 获取显示单元数量的select元素
+                    var unitSelect = $("#unitSelect");
+                    // 获取显示楼层的select元素
+                    var floorSelect = $("#floorSelect");
+                    unitSelect.empty();
+                    floorSelect.empty();
+                    // 判断是否查询成功
+                    if(res.code == 0) {
+                        unitSelect.append(new Option("请选择所属单元 (必填)",""));
+                        floorSelect.append(new Option("请选择所属楼层 (必填)",""));
+                        for (var i = 0; i < res.data.unitCount; i++) {
+                            unitSelect.append(new Option(i+1+"单元",i+1));
+                        }
+                        for (var i = 0; i < res.data.floorCount; i++) {
+                            floorSelect.append(new Option(i+1+"楼",i+1));
+                        }
+                    } else {
+                        unitSelect.append(new Option("查询该楼宇相关信息失败! ",""));
+                        floorSelect.append(new Option("查询该楼宇相关信息失败! ",""));
+                    }
+                    layui.form.render('select');
+                }
+            )
+        });
+
+        /**
+         * 绑定回车事件
+         */
+        $(document).keypress(function (e) {
+            //如果当前有类似layer.alert的窗体，点击最上层的确定按钮，并且取消所有焦点
+            if ($('.layui-layer-btn0').length > 0) {
+                $('.layui-layer-btn0').eq($('.layui-layer-btn0').length - 1)[0].click();
+                $("*").blur();
+            }
+        });
+
+        /**
+         * 单击提交事件
+         */
+        $(".addBtn").click(function () {
+            if (lock) {      //判断是否重复提交
+                lock = true;
+                //验证数据
+                var flag = isVerifyDate();
+                // 如果flag不为空就是验证不通过
+                if(flag) {
+                    layer.confirm(flag, {
+                        btn: ['确定']  //按钮
+                        , icon: 5
+                        , anim: 6
+                    });
+                    return;
+                }
+                //获取表单数据
+                var addData = $(".addForm").serializeArray();
+                //获取提交的url
+                var url = $(".addForm").attr("add-url");
+                // 将数据转换为对象, 注意发送时将对象转为JSON字符串
+                var jsonObj={};
+                $(addData).each(function(){
+                    jsonObj[this.name]=this.value;
+                });
+                $.ajax({
+                    url: url,
+                    type: 'PUT',
+                    async: false,
+                    contentType : 'application/json;charset=utf-8', //设置请求头信息
+                    data: JSON.stringify(jsonObj),
+                    success: function(rollData) {
+                        if (rollData.code == "0") {
+                            layer.confirm(rollData.msg, {
+                                btn: ['确定']  //按钮
+                                , icon: 6
+                            }, function () {
+                                window.parent.location.reload();    //刷新父页面
+                            });
+                        } else {
+                            layer.confirm(rollData.msg, {
+                                btn: ['确定']  //按钮
+                                , icon: 5
+                                , anim: 6
+                            }, function (index) {
+                                lock = true;
+                                layer.close(index);
+                            });
+                        }
+                    },
+                    error: function(res) {
+                        layer.confirm('啊哦！访问出问题了！快找开发狗算账！', {
+                            btn: ['确定']  //按钮
+                            , icon: 5
+                            , anim: 6
+                        }, function (index) {
+                            lock = true;
+                            layer.close(index);
+                        });
+                    }
+                })
+            }
+        });
+
+        /**
+         * 验证数据方法
+         */
+        function isVerifyDate() {
+            // 获取所有数据
+            var building = $("select[name='parentBuilding']").val();
+            var unit = $("select[name='parentUnit']").val();
+            var floor = $("select[name='parentFloor']").val();
+            var houseNum = $("input[name='houseNum']").val();
+            // 正整数正则
+            var reNumber = /^[0-9]+$/;
+            var reFloat = /^[+]{0,1}(\d+)$|^[+]{0,1}(\d+\.\d+)$/;
+            // 非空验证
+            if(!building || !unit || !floor || !houseNum) {
+                return "请认真点, 将所有必填数据填写完整! ";
+            }
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新增</title>
+    <link rel="stylesheet" th:href="@{/adminStatic/layui/css/layui.css}">
+    <script th:src="@{/webjars/layui/2.5.6/layui.js}" src="" type="text/javascript"></script>
+    <script th:src="@{/webjars/jquery/3.5.1/jquery.js}" src="" type="text/javascript"></script>
+    <style>
+        html {
+            height: 100%;
+        }
+
+        .layui-form-pane .layui-form-text .layui-textarea {
+            min-height: 120px;
+            max-height: 120px;
+        }
+
+        .div_show {
+            transform: translate(-2000px);
+            transition: all 0.8s;
+        }
+
+        .div_hide {
+            transform: translate(2000px);
+            transition: all 1.5s;
+        }
+
+        .photo-viewer {
+            margin: 50px 0;
+            text-align: center;
+        }
+
+        .img-reveal {
+            display: inline-block;
+            margin: 0px 8px;
+        }
+        .layui-form-select dl {
+            max-height: 195px;
+        }
+    </style>
+</head>
+<body style="padding: 15px;box-sizing: border-box;">
+    <input type="hidden" name="userId" id="userId" th:value="${userId}">
+    <input type="hidden" name="noticeId" th:value="${noticeInfo.id}">
+    <div style="max-width: 450px;">
+        <div th:text="${noticeInfo.title}" style="font-size: 18px; font-weight: bold; text-align: center"></div>
+        <div style="text-align: center">
+            <p th:text="${noticeInfo.createDate + '&nbsp;&nbsp;--&nbsp;&nbsp;作者：' + noticeInfo.userName}" style="font-size: 12px; color: #777; margin: 10px 0;"></p>
+        </div>
+        <div style="min-height: 300px">
+            <p th:text="${noticeInfo.content}" style="text-indent: 2em; letter-spacing: 1px">
+
+            </p>
+            <img th:src="@{'../upload/' + ${noticeInfo.newsImg}}" alt="" style="max-width: 450px; margin-top: 15px">
+        </div>
+        <hr>
+        <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px; ">
+            评价
+            <button class="layui-btn layui-btn-xs layui-btn-normal" id="createComment" style="font-weight: normal; float: right">发表评论</button>
+            <div style="clear: both"></div>
+        </div>
+        <div>
+            <div class="layui-bg-gray" style="padding: 10px;">
+                <div class="layui-row layui-col-space30" th:each="item : ${comments}">
+                    <div class="layui-col-md12">
+                        <div class="layui-card">
+                            <div class="layui-card-header layui-row">
+                                <div style="width: 49%; display: inline-block" th:text="${'评价人：' + item.user.userName}"></div>
+                                <div style="width: 49%; display: inline-block; font-size: 12px; color: #777; text-align: right"
+                                     th:text="${item.createDate}"></div>
+                            </div>
+                            <div class="layui-card-body" th:text="${item.content}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script type="text/javascript" th:src="@{/webStatic/js/myIndex.js}" src="js/main.js"></script>
+<script>
+    layui.use(['form', 'upload', 'laydate'], function () {
+        var layer = layui.layer;
+
+        var lock = true;
+
+        /**
+         * 绑定回车事件
+         */
+        $(document).keypress(function (e) {
+            //如果当前有类似layer.alert的窗体，点击最上层的确定按钮，并且取消所有焦点
+            if ($('.layui-layer-btn0').length > 0) {
+                $('.layui-layer-btn0').eq($('.layui-layer-btn0').length - 1)[0].click();
+                $("*").blur();
+            }
+        });
+
+        /**
+         * 单击提交事件
+         */
+        $(".addBtn").click(function () {
+            if (lock) {      //判断是否重复提交
+                lock = true;
+                //验证数据
+                var flag = isVerifyDate();
+                // 如果flag不为空就是验证不通过
+                if(flag) {
+                    layer.confirm(flag, {
+                        btn: ['确定']  //按钮
+                        , icon: 5
+                        , anim: 6
+                    });
+                    return;
+                }
+                //获取表单数据
+                var addData = $(".addForm").serializeArray();
+                //获取提交的url
+                var url = $(".addForm").attr("add-url");
+                // 将数据转换为对象, 注意发送时将对象转为JSON字符串
+                var jsonObj={};
+                $(addData).each(function(){
+                    jsonObj[this.name]=this.value;
+                });
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    async: false,
+                    contentType : 'application/json;charset=utf-8', //设置请求头信息
+                    data: JSON.stringify(jsonObj),
+                    success: function(rollData) {
+                        if (rollData.code == "0") {
+                            layer.confirm(rollData.msg, {
+                                btn: ['确定']  //按钮
+                                , icon: 6
+                            }, function () {
+                                window.parent.location.reload();    //刷新父页面
+                            });
+                        } else {
+                            layer.confirm(rollData.msg, {
+                                btn: ['确定']  //按钮
+                                , icon: 5
+                                , anim: 6
+                            }, function (index) {
+                                lock = true;
+                                layer.close(index);
+                            });
+                        }
+                    },
+                    error: function(res) {
+                        layer.confirm('啊哦！访问出问题了！快找开发狗算账！', {
+                            btn: ['确定']  //按钮
+                            , icon: 5
+                            , anim: 6
+                        }, function (index) {
+                            lock = true;
+                            layer.close(index);
+                        });
+                    }
+                })
+            }
+        });
+
+        /**
+         * 验证数据方法
+         */
+        function isVerifyDate() {
+            // 获取所有数据
+            var title = $("input[name='title']").val();
+            var content = $("textarea[name='content']").val();
+            // 非空验证
+            if(!title || !content) {
+                return "请认真点, 将所有必填数据填写完整! ";
+            }
+        }
+    });
+</script>
+</body>
+</html>

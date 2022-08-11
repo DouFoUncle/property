@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新增</title>
+    <link rel="stylesheet" th:href="@{/adminStatic/layui/css/layui.css}">
+    <script th:src="@{/webjars/layui/2.5.6/layui.js}" src="" type="text/javascript"></script>
+    <script th:src="@{/webjars/jquery/3.5.1/jquery.js}" src="" type="text/javascript"></script>
+    <style>
+        html {
+            height: 100%;
+        }
+
+        .layui-form-pane .layui-form-text .layui-textarea {
+            min-height: 120px;
+            max-height: 120px;
+        }
+
+        .div_show {
+            transform: translate(-2000px);
+            transition: all 0.8s;
+        }
+
+        .div_hide {
+            transform: translate(2000px);
+            transition: all 1.5s;
+        }
+
+        .photo-viewer {
+            margin: 50px 0;
+            text-align: center;
+        }
+
+        .img-reveal {
+            display: inline-block;
+            margin: 0px 8px;
+        }
+
+        .layui-btn {
+            height: 34px;
+            line-height: 34px;
+        }
+        .layui-form-select dl {
+            max-height: 195px;
+        }
+    </style>
+</head>
+<body style="height: 100%;padding: 15px;box-sizing: border-box">
+
+<!--表单-->
+<form class="layui-form layui-form-pane form-info addForm" action="" th:add-url="${addUrl}">
+    <div id="product_info" style="width:100%">
+        <input type="hidden" name="userName" th:value="${noticeInfo.userName}">
+        <!-- 公告标题 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">标题</label>
+            <div class="layui-input-inline" lay-verify="required" >
+                <input class="layui-input" autocomplete="off" placeholder="请填写标题名 (必填)"
+                       name="title" th:value="${noticeInfo.title}">
+            </div>
+        </div>
+        <!-- 公告内容 -->
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">公告内容</label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入内容" class="layui-textarea" name="content">[[${noticeInfo.content}]]</textarea>
+            </div>
+        </div>
+
+        <!-- 图片上传 -->
+        <div class="layui-form-item layui-form-text">
+            <div class="layui-upload">
+                <button type="button" class="layui-btn layui-btn-normal" id="test1">上传图片</button>
+                <div class="layui-upload-list">
+                    <img class="layui-upload-img" id="demo1" width="350" alt="暂无图片" th:src="@{'../upload/' + ${noticeInfo.newsImg}}"
+                         style="min-height: 100px; border: 1px solid #DDD">
+                    <input type="hidden" id="noticeImg" name="newsImg" th:value="${noticeInfo.newsImg}">
+                    <p id="demoText"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-input" style="margin-bottom: 15px">
+        <input type="hidden" th:value="${noticeInfo.id}" name="id">
+        <input type="button" value="提交" name="submit" class="layui-btn addBtn layui-btn-normal">
+        <input type="reset" class="layui-btn layui-btn-normal" value="清空">
+    </div>
+</form>
+
+
+<script>
+    layui.use(['form', 'upload', 'laydate'], function () {
+        var layer = layui.layer, upload = layui.upload;
+
+        var uploadInst = upload.render({
+            elem: '#test1'
+            ,url: '../system/uploadImages?imgName=[[${imgName}]]'
+            ,before: function(obj){
+                //预读本地文件示例，不支持ie8
+                obj.preview(function(index, file, result){
+                    $('#demo1').attr('src', result); //图片链接（base64）
+                });
+            }
+            ,done: function(res){
+                //如果上传失败
+                if(res.code != 0){
+                    return layer.msg('上传失败');
+                }
+                //上传成功的一些操作
+                console.log(res.data)
+                $("#noticeImg").val(res.data.imgName);
+                $('#demoText').html(''); //置空上传失败的状态
+            }
+            ,error: function(){
+                //演示失败状态，并实现重传
+                var demoText = $('#demoText');
+                demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                demoText.find('.demo-reload').on('click', function(){
+                    uploadInst.upload();
+                });
+            }
+        });
+
+        var lock = true;
+
+        /**
+         * 绑定回车事件
+         */
+        $(document).keypress(function (e) {
+            //如果当前有类似layer.alert的窗体，点击最上层的确定按钮，并且取消所有焦点
+            if ($('.layui-layer-btn0').length > 0) {
+                $('.layui-layer-btn0').eq($('.layui-layer-btn0').length - 1)[0].click();
+                $("*").blur();
+            }
+        });
+
+        /**
+         * 单击提交事件
+         */
+        $(".addBtn").click(function () {
+            if (lock) {      //判断是否重复提交
+                lock = true;
+                //验证数据
+                var flag = isVerifyDate();
+                // 如果flag不为空就是验证不通过
+                if(flag) {
+                    layer.confirm(flag, {
+                        btn: ['确定']  //按钮
+                        , icon: 5
+                        , anim: 6
+                    });
+                    return;
+                }
+                //获取表单数据
+                var addData = $(".addForm").serializeArray();
+                //获取提交的url
+                var url = $(".addForm").attr("add-url");
+                // 将数据转换为对象, 注意发送时将对象转为JSON字符串
+                var jsonObj={};
+                $(addData).each(function(){
+                    jsonObj[this.name]=this.value;
+                });
+                $.ajax({
+                    url: url,
+                    type: 'PUT',
+                    async: false,
+                    contentType : 'application/json;charset=utf-8', //设置请求头信息
+                    data: JSON.stringify(jsonObj),
+                    success: function(rollData) {
+                        if (rollData.code == "0") {
+                            layer.confirm(rollData.msg, {
+                                btn: ['确定']  //按钮
+                                , icon: 6
+                            }, function () {
+                                window.parent.location.reload();    //刷新父页面
+                            });
+                        } else {
+                            layer.confirm(rollData.msg, {
+                                btn: ['确定']  //按钮
+                                , icon: 5
+                                , anim: 6
+                            }, function (index) {
+                                lock = true;
+                                layer.close(index);
+                            });
+                        }
+                    },
+                    error: function(res) {
+                        layer.confirm('啊哦！访问出问题了！快找开发狗算账！', {
+                            btn: ['确定']  //按钮
+                            , icon: 5
+                            , anim: 6
+                        }, function (index) {
+                            lock = true;
+                            layer.close(index);
+                        });
+                    }
+                })
+            }
+        });
+
+        /**
+         * 验证数据方法
+         */
+        function isVerifyDate() {
+            // 获取所有数据
+            var title = $("input[name='title']").val();
+            var content = $("textarea[name='content']").val();
+            // 非空验证
+            if(!title || !content) {
+                return "请认真点, 将所有必填数据填写完整! ";
+            }
+        }
+    });
+</script>
+</body>
+</html>

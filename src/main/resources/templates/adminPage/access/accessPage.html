@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-X-admin2.2</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="stylesheet" href="../../../static/adminStatic/css/font.css" th:href="@{/adminStatic/css/font.css}">
+    <link rel="stylesheet" href="../../../static/adminStatic/css/xadmin.css" th:href="@{/adminStatic/css/xadmin.css}">
+    <script th:src="@{/webjars/layui/2.5.6/layui.js}" src="" type="text/javascript"></script>
+    <script th:src="@{/webjars/jquery/3.5.1/jquery.js}" src="" type="text/javascript"></script>
+    <script type="text/javascript" src="../../../static/adminStatic/js/xadmin.js" th:src="@{/adminStatic/js/xadmin.js}"></script>
+    <script type="text/javascript" src="../../../static/adminStatic/js/xadmin.js" th:src="@{/adminStatic/js/MyLayuiUtils.js}"></script>
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        .layui-form-item {
+            margin-bottom: 0;
+        }
+        .layui-form-pane .layui-form-label {
+            max-width: 100px;
+        }
+        .layui-form-item .layui-input-inline .layui-form-select {
+            width: 180px;
+        }
+        .layui-form-pane .layui-form-label {
+            padding: 9px 15px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body " style="padding-bottom: 0;">
+                    <form class="layui-form layui-col-space5 layui-form-pane" id="form">
+                        <!-- 根据标题查询 -->
+                        <div class="layui-inline layui-show-xs-block layui-form-item">
+                            <label class="layui-form-label">用户名</label>
+                            <div class="layui-input-inline">
+                                <input class="layui-input" autocomplete="off" placeholder="请输入要查询的用户名" name="userName">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline layui-show-xs-block">
+                            <button class="layui-btn layui-btn-normal" id="searchBtn" type="button" lay-filter="sreach">
+                                <i class="layui-icon">&#xe615;</i>
+                            </button>
+                            <input class="layui-btn layui-btn-normal layui-icon" type="reset" value="&#xe669;"/>
+                        </div>
+                    </form>
+                </div>
+                <div class="layui-card-body ">
+                    <table id="listInfo" lay-filter="listInfo"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+<script>
+    layui.use(['table','form', 'upload', 'laydate'],
+        function () {
+            var table = layui.table,
+                layer = layui.layer,
+                form = layui.form;
+
+            // 初始调用表格加载方法
+            loadFunction("getDataByPage");
+
+            /**
+             * 绑定查询按钮
+             */
+            $("#searchBtn").click(function() {
+                // 获取表单数据
+                var sendData = $("#form").serialize();
+                // 重新调用表格加载方法
+                loadFunction("getDataByPage?" + sendData)
+            })
+
+            /**
+             * 加载表格方法
+             * @param url
+             */
+            function loadFunction(url) {
+                //第一个实例
+                table.render({
+                    elem: '#listInfo'
+                    , height: 'full-115'
+                    , url: url //数据接口
+                    , defaultToolbar: ['filter']
+                    , loading: true
+                    , limit: 20
+                    , title: '渠道信息'
+                    , toolbar: '#toolbarDemo'
+                    , page: {
+                        layout: ['limit', 'count', 'prev', 'page', 'next', 'skip', 'refresh'] //自定义分页布局
+                        ,groups: 5 //只显示 5 个连续页码
+                        ,theme: '#1E9FFF'
+                    }
+                    , cols:
+                        [
+                            [ //表头
+                                { type: 'numbers', title: '序号', width: 60  }
+                                , {field: 'id', title: '主键标识', hide: true}
+                                , {field: 'userId', title: '登记用户的ID', hide: true}
+                                , {field: 'userName', title: '用户名'}
+                                , {field: 'phone', title: '联系电话'}
+                                , {field: 'type', title: '登记类型', templet:'<div>{{d.type == "0" ? "进入" :  "出去"}}</div>'}
+                                , {field: 'desc', title: '事由'}
+                                , {field: 'createDate', title: '登记时间'}
+                            ]
+                        ]
+                })
+            }
+        });
+</script>
+</html>

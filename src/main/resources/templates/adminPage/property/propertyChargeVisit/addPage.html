@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新增</title>
+    <link rel="stylesheet" th:href="@{/adminStatic/layui/css/layui.css}">
+    <script th:src="@{/webjars/layui/2.5.6/layui.js}" src="" type="text/javascript"></script>
+    <script th:src="@{/webjars/jquery/3.5.1/jquery.js}" src="" type="text/javascript"></script>
+    <script type="text/javascript" src="../../js/xadmin.js" th:src="@{/adminStatic/js/MyLayuiUtils.js}"></script>
+    <style>
+        html {
+            height: 100%;
+        }
+
+        .layui-form-pane .layui-form-text .layui-textarea {
+            min-height: 80px;
+            max-height: 80px;
+        }
+
+        .layui-form-item .layui-input-inline {
+            width: 230px;
+        }
+
+        .div_show {
+            transform: translate(-2000px);
+            transition: all 0.8s;
+        }
+
+        .div_hide {
+            transform: translate(2000px);
+            transition: all 1.5s;
+        }
+
+        .photo-viewer {
+            margin: 50px 0;
+            text-align: center;
+        }
+
+        .img-reveal {
+            display: inline-block;
+            margin: 0px 8px;
+        }
+
+        .layui-btn {
+            height: 34px;
+            line-height: 34px;
+        }
+
+        .layui-form-select dl {
+            max-height: 195px;
+        }
+    </style>
+</head>
+<body style="height: 100%;padding: 15px;box-sizing: border-box">
+
+<!--表单-->
+<form class="layui-form layui-form-pane form-info addForm" action="" th:add-url="${addUrl}">
+    <div id="product_info" style="width:100%">
+        <div class="layui-form-item">
+            <div class="layui-form-item">
+                <div style="display: inline-block">
+                    <!-- 抄表人 -->
+                    <label class="layui-form-label">抄表人</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="readName" lay-verify="required" placeholder="请输入抄表人 (必填)"
+                               autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div style="display: inline-block; position: absolute; right: 5px;">
+                    <!-- 抄表时间 -->
+                    <label class="layui-form-label">抄表时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="readDate" lay-verify="required" placeholder="请选择抄表时间 (必填)"
+                               autocomplete="off" readonly th:value="${readDate}"
+                               class="layui-input" id="readDate">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-form-item">
+                <div style="display: inline-block;">
+                    <!-- 收费项 -->
+                    <label class="layui-form-label">收费项</label>
+                    <div class="layui-input-inline" lay-verify="required">
+                        <select name="itemName" class="layui-form-select" lay-filter="itemName">
+                            <option value="">请选择收费项</option>
+                            <option th:value="${item.getId()+'|'+item.getChargeName()}"
+                                    th:each="item : ${chargeItems}" th:itemPrice="${item.getItemPrice()}"
+                                    th:text="${item.getChargeName()}" th:priceDesc="${item.getPriceDesc()}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 计算方式 -->
+                <div style="display: inline-block; position: absolute; right: 5px">
+                    <label class="layui-form-label">计费方式</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="priceDesc" lay-verify="required" placeholder="无需填写"
+                               autocomplete="off" readonly
+                               class="layui-input">
+                        <input type="hidden" name="itemPrice">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-form-item">
+                <!-- 楼宇号 -->
+                <div style="display: inline-block; position: absolute; right: 5px">
+                    <label class=" layui-form-label">房间信息</label>
+                    <div class="layui-input-inline">
+                        <select name="houseNum" class="layui-form-select" lay-filter="houseNum">
+                            <option value="">选择或输入楼宇信息</option>
+                            <option th:value="${item.getId()+'|'+item.getParentBuilding()+'|'+item.getParentUnit()+'|'+item.getHouseNum()}"
+                                    th:text="${item.getParentBuilding()+'号楼'+item.getParentUnit()+'单元'+item.getHouseNum()}"
+                                    th:each="item : ${houseInfos}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 户主姓名 -->
+                <div style="display: inline-block;">
+                    <label class="layui-form-label">户主姓名</label>
+                    <div class="layui-input-inline" lay-verify="required">
+                        <input type="text" name="userName" lay-verify="required" placeholder="户主姓名 (选择房间信息自动识别)"
+                               autocomplete="off" readonly
+                               class="layui-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-form-item">
+                <!-- 房屋面积 -->
+                <div style="display: inline-block; position: absolute; right: 5px">
+                    <label class="layui-form-label">房屋面积</label>
+                    <div class="layui-input-inline" lay-verify="required">
+                        <input type="text" name="houseArea" lay-verify="required" placeholder="选择房间信息自动识别"
+                               autocomplete="off" readonly
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <!-- 户主电话 -->
+                <div style="display: inline-block;">
+                    <label class="layui-form-label">户主电话</label>
+                    <div class="layui-input-inline" lay-verify="required">
+                        <input type="text" name="phone" lay-verify="required" placeholder="户主电话 (选择房间信息自动识别)"
+                               autocomplete="off" readonly
+                               class="layui-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-form-item">
+                <!-- 上月读数 -->
+                <div style="display: inline-block;">
+                    <label class="layui-form-label">上次读数</label>
+                    <div class="layui-input-inline" lay-verify="required">
+                        <input type="text" name="prevMonthCount" lay-verify="required" placeholder="上月读数 (自动识别上月表的记录)"
+                               autocomplete="off" readonly
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <!-- 本月读数 -->
+                <div style="display: inline-block; position: absolute; right: 5px">
+                    <label class="layui-form-label">本次读数</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="currMonthCount" lay-verify="required" placeholder="本月度数 (选填 本月表的记录)"
+                               autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-form-item">
+                <!-- 用量 -->
+                <div style="display: inline-block;">
+                    <label class="layui-form-label">本次用量</label>
+                    <div class="layui-input-inline" lay-verify="required">
+                        <input type="text" name="useCount" lay-verify="required" placeholder="本月用量 (自动计算)"
+                               autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+
+                <!-- 要缴纳的费用 -->
+                <div style="display: inline-block; position: absolute; right: 5px">
+                    <label class="layui-form-label">本次费用</label>
+                    <div class="layui-input-inline" lay-verify="required">
+                        <input type="text" name="showPrice" lay-verify="required" placeholder="缴纳的费用 (输入用量自动识别)"
+                               autocomplete="off" readonly
+                               class="layui-input">
+                        <input type="hidden" name="price">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-input" style="position: absolute; left: 15px; bottom: 15px;">
+        <input type="button" value="提交" name="submit" class="layui-btn addBtn layui-btn-normal">
+        <input type="reset" class="layui-btn layui-btn-normal" value="清空">
+    </div>
+</form>
+
+
+<script>
+    layui.use(['form', 'upload', 'laydate'], function () {
+        var layer = layui.layer
+            , laydate = layui.laydate
+            , form = layui.form;
+
+        var lock = true;
+
+        // 日期选择         -------   弃用，使用自动生成的时间
+        // laydate.render({
+        //     elem: '#readDate'
+        //     , type: 'datetime'
+        //     , isInitValue: true
+        //     , value: new Date()
+        // });
+
+        /**
+         * 清空数据
+         */
+        function clearData(isDesc, isHouseInfo) {
+            // 清空读数
+            $("input[name='prevMonthCount']").val('');
+            $("input[name='currMonthCount']").val('');
+            // 清空用量
+            $("input[name='useCount']").val('');
+            // 清空价格
+            $("input[name='price']").val('');
+            $("input[name='showPrice']").val('');
+            // 判断是否清空价格描述
+            if(isDesc) {
+                // 清空价格描述
+                $("input[name='itemPrice']").val('');
+                $("input[name='priceDesc']").val('');
+            }
+            // 判断是否清空住房信息
+            if(isHouseInfo) {
+                $("input[name='userName']").val('');
+                $("input[name='phone']").val('');
+                $("input[name='houseArea']").val('');
+            }
+        }
+
+        /**
+         * 选择收费项后计费方式进行联动显示
+         */
+        form.on('select(itemName)', function(data){
+            var elem = data.elem;
+            var value = data.value;     //选中的值
+            if(!value) {
+                clearData(true);
+                return;
+            }
+            // 先清空一遍数据
+            clearData();
+            var options = $(elem).children("option");
+            var itemPrice = "";
+            var priceDesc = "";
+            // 循环原生对象中的option
+            for (let i = 0; i < options.length; i++) {
+                // 判断value相等就找到了
+                var itemValue = options[i].value;
+                if(itemValue == value) {
+                    itemPrice = options[i].getAttribute("itemPrice");
+                    priceDesc = options[i].getAttribute("priceDesc");
+                }
+            }
+            // 计费方式联动显示
+            $("input[name='itemPrice']").val(itemPrice);
+            $("input[name='priceDesc']").val(priceDesc);
+            // 获取房号信息查看是否已经选择房间
+            var houseInfo = $("select[name='houseNum']").val();
+            var houseNum = "";
+            var houseId = "";
+            if(houseInfo) {
+                // 获取房号
+                houseNum = houseInfo.split("|")[3];
+                houseId = houseInfo.split("|")[0];
+            }
+            // 判断是否选择的是物业费
+            if(value.split("|")[0] == 1) {
+                // 如果已选择了房间信息，直接计算物业费用
+                var houseArea = $("input[name='houseArea']").val();
+                // 如果房间ID不为空，但是面积信息为空，则代表该房间没有售出
+                console.log(houseArea);
+                console.log(houseId);
+                console.log(houseId && !houseArea);
+                if(houseId && !houseArea) {
+                    layer.msg('该房间是空房！', {
+                        icon: 5
+                        , time: 1500
+                    })
+                    return;
+                }
+                if(houseArea) {
+                    // 单价×面积
+                    var price = itemPrice * parseInt(houseArea);
+                    // 赋值价格（将分换算为元）
+                    $("input[name='price']").val(price);          // 真正保存价格的隐藏表单
+                    // 用于显示的表单，带上了单位，如果不这样做，提交表单时会因为类型不同而不能让MVC自动封装参数
+                    $("input[name='showPrice']").val((price / 100) + "元");
+                }
+            } else if(houseNum) {
+                // 查询读数信息
+                $.getJSON(
+                    "../house/getInfoById?id=" + houseId + "&itemId=" + value.split("|")[0],
+                    function(res) {
+                        if(res.code == 0) {
+                            // 如果已选择了缴费项，同时缴费项是物业费时，直接计算物业费用
+                            var itemName = $("select[name='itemName']").text();
+                            var itemId = $("select[name='itemName']").val().split("|")[0];
+                            // 判断房屋是否已售出
+                            if(res.data.houseInfo.ownerName) {
+                                // 如果不是物业费，则表示返回的信息中还带了上月读数的信息，需要取出
+                                $("input[name='userName']").val(res.data.houseInfo.ownerName);
+                                $("input[name='phone']").val(res.data.houseInfo.phone);
+                                $("input[name='houseArea']").val(res.data.houseInfo.houseArea);
+                                // 获取上月读数
+                                $("input[name='prevMonthCount']").val(res.data.chargeVisit.prevMonthCount);
+                            } else {
+                                $("input[name='userName']").val('');
+                                $("input[name='phone']").val('');
+                                $("input[name='houseArea']").val('');
+                                layer.msg('该房间是空房！', {
+                                    icon: 5
+                                    , time: 1500
+                                })
+                            }
+                        } else {
+                            layer.msg(res.msg, {
+                                icon: 5
+                                , time: 1500
+                            })
+                        }
+                    }
+                )
+            }
+        });
+
+        /**
+         * 选择房间信息后户主房间等信息进行联动显示
+         */
+        form.on('select(houseNum)', function(data){
+            var value = data.value;     // 选中的值
+            if(!value) {
+                clearData(null, true);
+                return;
+            }
+            // 先清空一遍数据
+            clearData();
+            var houseId = value.split("|")[0];  // 截取到第一个数值就是房屋ID
+            // 获取选中的收费项ID
+            var itemInfo = $("select[name='itemName']").val();
+            if(!itemInfo) {
+
+                layer.msg("请先选择收费项！", {
+                    time: 1000
+                    , end: function() {
+                        $(".addForm")[0].reset();
+                    }
+                });
+                return;
+            }
+            console.log(itemInfo);
+            // 判断是否已选择收费项
+            var itemId = "";
+            if(itemInfo) {
+                // 已选择，获取选择的ID
+                itemId = itemInfo.split("|")[0];
+            }
+            console.log(itemId);
+            // 发起请求，根据ID查询该房间信息及户主信息
+            $.getJSON(
+                "../house/getInfoById?id=" + houseId + "&itemId=" + itemId
+                , function(res) {
+                    if(res.code == 0) {
+                        // 如果已选择了缴费项，同时缴费项是物业费时，直接计算物业费用
+                        var itemName = $("select[name='itemName']").text();
+                        var itemId = $("select[name='itemName']").val().split("|")[0];
+                        // 判断房屋是否已售出
+                        if(res.data.houseInfo.ownerName) {
+                            // 判断是否是物业费
+                            if(itemName.indexOf("物业费") != -1) {
+                                // 查询成功，绑定需要的信息
+                                $("input[name='userName']").val(res.data.houseInfo.ownerName);
+                                $("input[name='phone']").val(res.data.houseInfo.phone);
+                                $("input[name='houseArea']").val(res.data.houseInfo.houseArea);
+                                // 计算物业费用
+                                var itemPrice = parseInt($("input[name='itemPrice']").val());
+                                // 单价×面积
+                                var price = itemPrice * parseInt(res.data.houseInfo.houseArea);
+                                // 赋值价格（将分换算为元）
+                                $("input[name='price']").val(price);          // 真正保存价格的隐藏表单
+                                // 用于显示的表单，带上了单位，如果不这样做，提交表单时会因为类型不同而不能让MVC自动封装参数
+                                $("input[name='showPrice']").val((price / 100) + "元");
+                            } else {
+                                // 如果不是物业费，则表示返回的信息中还带了上月读数的信息，需要取出
+                                $("input[name='userName']").val(res.data.houseInfo.ownerName);
+                                $("input[name='phone']").val(res.data.houseInfo.phone);
+                                $("input[name='houseArea']").val(res.data.houseInfo.houseArea);
+                                // 获取上月读数
+                                $("input[name='prevMonthCount']").val(res.data.chargeVisit.currMonthCount);
+                            }
+                        } else {
+                            $("input[name='userName']").val('');
+                            $("input[name='phone']").val('');
+                            $("input[name='houseArea']").val('');
+                            layer.msg('该房间是空房！', {
+                                icon: 5
+                                , time: 1500
+                            })
+                        }
+                    } else {
+                        layer.msg(res.msg, {
+                            icon: 5
+                            , time: 1500
+                        })
+                    }
+                }
+            )
+        });
+
+        /**
+         * 为本月读数输入框绑定改变事件
+         */
+        $("input[name='currMonthCount']").on("input",function(e) {
+            // 获取input输入的值
+            console.log(e.delegateTarget.value);
+            var inputValue = e.delegateTarget.value
+            // 判断上月读数是否有值，没有则不进行计算
+            var prevVal = $("input[name='prevMonthCount']").val();
+            // 获取到单价
+            var itemPrice = $("input[name='itemPrice']").val();
+            if(!prevVal || !itemPrice || !inputValue || isNaN(inputValue)) {
+                $("input[name='useCount']").val('');
+                $("input[name='showPrice']").val('');
+                $("input[name='price']").val('');
+                return;
+            }
+            // 有值进行计算
+            var result = parseInt(inputValue) - parseInt(prevVal);
+            // 计算完成后进行赋值
+            $("input[name='useCount']").val(result);
+            // 接着计算缴费价格
+            var totalPrice = result * parseFloat(itemPrice);
+            $("input[name='showPrice']").val(totalPrice / 100);
+            $("input[name='price']").val(totalPrice);
+        });
+
+        /**
+         * 绑定回车事件
+         */
+        $(document).keypress(function (e) {
+            //如果当前有类似layer.alert的窗体，点击最上层的确定按钮，并且取消所有焦点
+            if ($('.layui-layer-btn0').length > 0) {
+                $('.layui-layer-btn0').eq($('.layui-layer-btn0').length - 1)[0].click();
+                $("*").blur();
+            }
+        });
+
+        /**
+         * 单击提交事件
+         */
+        $(".addBtn").click(function () {
+            if (lock) {      //判断是否重复提交
+                lock = true;
+                //验证数据
+                var flag = isVerifyDate();
+                // 如果flag不为空就是验证不通过
+                if (flag) {
+                    layer.confirm(flag, {
+                        btn: ['确定']  //按钮
+                        , icon: 5
+                        , anim: 6
+                    });
+                    return;
+                }
+                //获取表单数据
+                var addData = $(".addForm").serializeArray();
+                //获取提交的url
+                var url = $(".addForm").attr("add-url");
+                // 将数据转换为对象, 注意发送时将对象转为JSON字符串
+                var jsonObj = {};
+                $(addData).each(function () {
+                    jsonObj[this.name] = this.value;
+                });
+                console.log(jsonObj)
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    async: false,
+                    contentType: 'application/json;charset=utf-8', //设置请求头信息
+                    data: JSON.stringify(jsonObj),
+                    success: function (rollData) {
+                        if (rollData.code == 0) {
+                            layer.confirm(rollData.msg, {
+                                btn: ['确定']  //按钮
+                                , icon: 6
+                            }, function () {
+                                window.parent.location.reload();    //刷新父页面
+                            });
+                        } else {
+                            layer.confirm(rollData.msg, {
+                                btn: ['确定']  //按钮
+                                , icon: 5
+                                , anim: 6
+                            }, function (index) {
+                                lock = true;
+                                layer.close(index);
+                            });
+                        }
+                    },
+                    error: function (res) {
+                        layer.confirm('啊哦！访问出问题了！快找开发狗算账！', {
+                            btn: ['确定']  //按钮
+                            , icon: 5
+                            , anim: 6
+                        }, function (index) {
+                            lock = true;
+                            layer.close(index);
+                        });
+                    }
+                })
+            }
+        });
+
+        /**
+         * 验证数据方法
+         */
+        function isVerifyDate() {
+            // 获取所有数据
+            var houseNum = $("select[name='houseNum']").val();
+            var houseNumText = $("select[name='houseNum']").text();
+            var itemName = $("select[name='itemName']").val();
+            var currMonthCount = $("input[name='currMonthCount']").val();       // 本月读数
+            var readName = $("input[name='readName']").val();       // 抄表人
+            var readDate = $("input[name='readDate']").val();       // 抄表时间
+            var useCount = $("input[name='useCount']").val();       // 用量
+            // 非空验证
+            if (!houseNum || !itemName || !readName || !readDate) {
+                return "请认真点, 将所有必填数据填写完整! ";
+            }
+            // 如果是物业费，则读数和用量可以为空
+            if(itemName.indexOf("物业费") < 0) {
+                // 不是物业费，则验证读数是否为空
+                if(!currMonthCount) {
+                    return "收费项不为物业费时，本月读数不能为空！";
+                }
+            } else {
+                // 是物业费，则读数必须为空
+                if(currMonthCount) {
+                    return "收费项为物业费时，本月读数不可输入！";
+                }
+            }
+            // 本月读数不为空则验证是否是合法数字
+            if(currMonthCount) {
+                return checkNumber(currMonthCount);
+            }
+            if(useCount < 0) {
+                return "数据输入有误！请检查！";
+            }
+        }
+    });
+</script>
+</body>
+</html>

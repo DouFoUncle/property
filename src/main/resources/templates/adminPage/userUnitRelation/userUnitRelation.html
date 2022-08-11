@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-X-admin2.2</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="stylesheet" href="../../css/font.css" th:href="@{/adminStatic/css/font.css}">
+    <link rel="stylesheet" href="../../css/xadmin.css" th:href="@{/adminStatic/css/xadmin.css}">
+    <script th:src="@{/webjars/layui/2.5.6/layui.js}" src="" type="text/javascript"></script>
+    <script th:src="@{/webjars/jquery/3.5.1/jquery.js}" src="" type="text/javascript"></script>
+    <script type="text/javascript" src="../../js/xadmin.js" th:src="@{/adminStatic/js/xadmin.js}"></script>
+    <script type="text/javascript" src="../../js/xadmin.js" th:src="@{/adminStatic/js/MyLayuiUtils.js}"></script>
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        .layui-form-item {
+            margin-bottom: 0;
+        }
+        .layui-form-pane .layui-form-label {
+            max-width: 100px;
+        }
+        .layui-form-item .layui-input-inline {
+            width: 180px;
+        }
+        .layui-form-pane .layui-form-label {
+            padding: 9px 15px;
+        }
+    </style>
+</head>
+
+<body style="background-color: #FFF;padding: 15px;box-sizing: border-box">
+    <table id="listInfo" lay-filter="listInfo"></table>
+</body>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm iconfont layui-btn-normal" lay-event="add">&#xe6b9; 添加成员</button>
+        <button class="layui-btn layui-btn-sm iconfont layui-btn-danger" lay-event="del">&#xe69d; 删除成员</button>
+    </div>
+</script>
+
+<script>
+    layui.use(['table','form', 'upload', 'laydate'],
+        function () {
+            var table = layui.table,
+                layer = layui.layer,
+                form = layui.form,
+                upload = layui.upload,
+                laydate = layui.laydate;
+
+            var unitId = [[${unitId}]];
+
+            // 初始调用表格加载方法
+            loadFunction("getDataByPage?unitId="+unitId);
+
+            /**
+             * 加载表格方法
+             * @param url
+             */
+            function loadFunction(url) {
+                //第一个实例
+                table.render({
+                    elem: '#listInfo'
+                    , height: 'full-55'
+                    , url: url //数据接口
+                    , defaultToolbar: ['filter']
+                    , loading: true
+                    , limit: 20
+                    , title: '用户信息'
+                    , toolbar: '#toolbarDemo'
+                    , page: {
+                        layout: ['limit', 'count', 'prev', 'page', 'next', 'skip', 'refresh'] //自定义分页布局
+                        ,groups: 5 //只显示 5 个连续页码
+                        ,theme: '#1E9FFF'
+                    }
+                    , cols:
+                        [
+                            [ //表头
+                                {type: 'checkbox'}
+                                , { type: 'numbers', title: '序号', width: 60  }
+                                , {field: 'id', title: '主键标识', width: 120, hide: true}
+                                , {field: 'userName', title: '住户姓名', width: 120, templet: '<div>{{d.user.userName}}</div>'}
+                                , {field: 'userName', title: '住户类型', width: 120, templet: '<div>{{d.isHouseHolder == 1 ? "户主" : "成员"}}</div>'}
+                                , {field: 'sex', title: '性别', width: 120, templet: '<div>{{(d.user.sex == null || d.user.sex == "") ? "未填写" : d.user.sex}}</div>'}
+                                , {field: 'phone', title: '联系电话', templet: '<div>{{d.user.phone}}</div>'}
+                                , {field: 'cardNum', title: '身份证号', templet: '<div>{{(d.user.cardNum == null || d.user.cardNum == "") ? "未填写" : d.user.cardNum}}</div>'}
+                                , {field: 'registerAddress', title: '户籍地址', templet: '<div>{{(d.user.registerAddress == null || d.user.registerAddress == "") ? "未填写" : d.user.registerAddress}}</div>'}
+                            ]
+                        ]
+                })
+            }
+
+            //头工具栏事件
+            table.on('toolbar(listInfo)', function (obj) {
+                var checkStatus = table.checkStatus(obj.config.id);
+                var data = checkStatus.data;
+                var selectCount = data.length;      //获取选中行
+                var dataId = getIds(data);          //data是选中的所有数据，得到的是一个数组，将这个数组传入getIds方法进行处理
+                switch (obj.event) {
+                    case 'add':
+                        // 添加成员
+                        toWindow("../userUnitRelation/toAddWindow?id=" + unitId, "新增成员", "350px", "300px");
+                        break;
+                    //自定义头工具栏右侧图标 - 提示
+                    case 'del':
+                        // 删除重要信息
+                        deleteInfo(selectCount, dataId, "deleteInfo?delIds=" + dataId);
+                        break;
+                }
+            });
+        });
+</script>
+</html>

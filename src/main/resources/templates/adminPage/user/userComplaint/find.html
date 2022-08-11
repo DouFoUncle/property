@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新增</title>
+    <link rel="stylesheet" th:href="@{/adminStatic/layui/css/layui.css}">
+    <script th:src="@{/webjars/layui/2.5.6/layui.js}" src="" type="text/javascript"></script>
+    <script th:src="@{/webjars/jquery/3.5.1/jquery.js}" src="" type="text/javascript"></script>
+    <script th:src="@{/adminStatic/js/MyLayuiUtils.js}"></script>
+    <style>
+        html {
+            height: 100%;
+        }
+
+        .layui-form-pane .layui-form-text .layui-textarea {
+            min-height: 80px;
+            max-height: 80px;
+        }
+
+        .div_show {
+            transform: translate(-2000px);
+            transition: all 0.8s;
+        }
+
+        .div_hide {
+            transform: translate(2000px);
+            transition: all 1.5s;
+        }
+
+        .photo-viewer {
+            margin: 50px 0;
+            text-align: center;
+        }
+
+        .img-reveal {
+            display: inline-block;
+            margin: 0px 8px;
+        }
+
+        .layui-btn {
+            height: 34px;
+            line-height: 34px;
+        }
+        .layui-form-select dl {
+            max-height: 155px;
+        }
+    </style>
+</head>
+<body style="height: 100%;padding: 15px;box-sizing: border-box">
+
+<!--表单-->
+<form class="layui-form layui-form-pane form-info addForm">
+    <div id="product_info" style="width:100%">
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">结果反馈</label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入内容" name="resultMsg"
+                          style="min-height: 150px; max-height: 150px; resize: none" class="layui-textarea"
+                          th:if="${obj.resultMsg != null}" readonly>[[${obj.resultMsg}]]</textarea>
+                <textarea placeholder="未填写" name="resultMsg"
+                          style="min-height: 150px; max-height: 150px; resize: none" class="layui-textarea"
+                          th:if="${obj.resultMsg == null}" readonly></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">用户反馈</label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入内容" name="feedbackMsg"
+                          style="min-height: 150px; max-height: 150px; resize: none" class="layui-textarea"
+                          th:if="${obj.feedbackMsg != null}" readonly>[[${obj.feedbackMsg}]]</textarea>
+                <textarea placeholder="用户未填写" name="feedbackMsg"
+                          style="min-height: 150px; max-height: 150px; resize: none" class="layui-textarea"
+                          th:if="${obj.feedbackMsg == null}" readonly></textarea>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<script>
+    layui.use(['form', 'upload', 'laydate'], function () {
+        var layer = layui.layer,
+            form = layui.form;
+    });
+</script>
+</body>
+</html>

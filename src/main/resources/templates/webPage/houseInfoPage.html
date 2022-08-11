@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-X-admin2.2</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="stylesheet" href="../../../css/font.css" th:href="@{/adminStatic/css/font.css}">
+    <link rel="stylesheet" href="../../../css/xadmin.css" th:href="@{/adminStatic/css/xadmin.css}">
+    <script th:src="@{/webjars/layui/2.5.6/layui.js}" src="" type="text/javascript"></script>
+    <script th:src="@{/webjars/jquery/3.5.1/jquery.js}" src="" type="text/javascript"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js" th:src="@{/adminStatic/js/xadmin.js}"></script>
+    <script type="text/javascript" src="../../../js/xadmin.js" th:src="@{/adminStatic/js/MyLayuiUtils.js}"></script>
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        .layui-form-item {
+            margin-bottom: 0;
+        }
+        .layui-form-pane .layui-form-label {
+            max-width: 100px;
+        }
+        .layui-form-item .layui-input-inline {
+            width: 150px;
+        }
+        .layui-form-item .layui-input-inline .layui-form-select {
+            width: 150px;
+        }
+        .layui-form-pane .layui-form-label {
+            padding: 9px 15px;
+        }
+        .layui-btn.layui-btn-xs {
+            height: 26px;
+            line-height: 26px;
+            font-size: 13px
+        }
+    </style>
+</head>
+
+<body>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body " style="padding-bottom: 0;">
+                    <form class="layui-form layui-col-space5 layui-form-pane" id="form">
+                        <!-- 楼宇号 -->
+                        <div class="layui-inline layui-show-xs-block layui-form-item">
+                            <label class="layui-form-label">楼宇号</label>
+                            <div class="layui-input-inline">
+                                <select name="parentBuilding" lay-search>
+                                    <option value="">选择或输入楼宇号</option>
+                                    <option th:value="${item.buildingNum}" th:each="item:${buildingList}" th:text="${item.buildingNum+'号楼'}"></option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- 单元号 -->
+                        <div class="layui-inline layui-show-xs-block layui-form-item">
+                            <label class="layui-form-label">单元号</label>
+                            <div class="layui-input-inline">
+                                <select name="parentUnit" lay-search>
+                                    <option value="">选择或输入单元号</option>
+                                    <option th:value="${i}" th:each="i:${#numbers.sequence(1,maxCount)}" th:text="${i+'单元'}"></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 户型 -->
+                        <div class="layui-inline layui-show-xs-block layui-form-item">
+                            <label class="layui-form-label">户型</label>
+                            <div class="layui-input-inline">
+                                <input class="layui-input" autocomplete="off" placeholder="请输入要查询的户型" name="houseType">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline layui-show-xs-block">
+                            <button class="layui-btn layui-btn-normal" id="searchBtn" type="button" lay-filter="sreach">
+                                <i class="layui-icon">&#xe615;</i>
+                            </button>
+                            <input class="layui-btn layui-btn-normal layui-icon" type="reset" value="&#xe669;"/>
+                        </div>
+                    </form>
+                </div>
+                <div class="layui-card-body ">
+                    <table id="listInfo" lay-filter="listInfo"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+<script id="operationBar" type="text/html">
+    {{# if(d.isSold == 0) {}}
+        <button class="layui-btn layui-btn-sm iconfont" lay-event="sold">&#xe702; 购买</button>
+    {{# }}}
+</script>
+
+<script>
+    layui.use(['table','form', 'upload', 'laydate'],
+        function () {
+            var table = layui.table,
+                layer = layui.layer,
+                form = layui.form,
+                laydate = layui.laydate;
+
+            // 初始调用表格加载方法
+            loadFunction("getDataByPage");
+
+            /**
+             * 绑定查询按钮
+             */
+            $("#searchBtn").click(function() {
+                // 获取表单数据
+                var sendData = $("#form").serialize();
+                // 重新调用表格加载方法
+                loadFunction("getDataByPage?" + sendData)
+            })
+
+            /**
+             * 加载表格方法
+             * @param url
+             */
+            function loadFunction(url) {
+                //第一个实例
+                table.render({
+                    elem: '#listInfo'
+                    , height: 'full-115'
+                    , url: url //数据接口
+                    , defaultToolbar: ['filter']
+                    , loading: true
+                    , limit: 20
+                    , title: '住房信息'
+                    , toolbar: false
+                    , page: {
+                        layout: ['limit', 'count', 'prev', 'page', 'next', 'skip', 'refresh'] //自定义分页布局
+                        ,groups: 5 //只显示 5 个连续页码
+                        ,theme: '#1E9FFF'
+                    }
+                    , cols:
+                        [
+                            [ //表头
+                                { type: 'numbers', title: '序号', width: 60  }
+                                , {field: 'id', title: '主键标识', width: 120, hide: true}
+                                , {field: 'parentBuilding', title: '所属楼宇', templet: '<div>{{d.parentBuilding}}号楼</div>'}
+                                , {field: 'parentUnit', title: '所属单元', templet: '<div>{{d.parentUnit}}单元</div>'}
+                                , {field: 'parentFloor', title: '所属楼层', templet: '<div>{{d.parentFloor}}层</div>'}
+                                , {field: 'houseNum', title: '房间号'}
+                                , {field: 'houseArea', title: '房间面积', templet: '<div>{{d.houseArea}}㎡</div>'}
+                                , {field: 'houseType', title: '户型', width: 200}
+                                , {field: 'isSold', title: '状态', sort: true, templet: "<div>{{d.isSold == 1 ? '<span style=\"color:red;\">已售出</span>' : '<span style=\"color:blue;\">未售出</span>'}}</div>"}
+                                , {field: 'caozuo', title: '操作', toolbar:'#operationBar', width: '15%'}
+                            ]
+                        ]
+                })
+            }
+
+            //行内工具条
+            table.on('tool(listInfo)', function(obj){
+                switch(obj.event){
+                    case 'sold':
+                        // 获取本条信息的数据
+                        var id = obj.data.id;
+                        // 售出房屋
+                        toWindow("../house/toWebBuyPage?userId=[[${userId}]]&id=" + id, "填写户主信息", "350px", "300px");
+                        break;
+                }
+            });
+        });
+</script>
+</html>

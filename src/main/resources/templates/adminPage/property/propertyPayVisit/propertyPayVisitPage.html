@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html class="x-admin-sm" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-X-admin2.2</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="stylesheet" href="../../css/font.css" th:href="@{/adminStatic/css/font.css}">
+    <link rel="stylesheet" href="../../css/xadmin.css" th:href="@{/adminStatic/css/xadmin.css}">
+    <script th:src="@{/webjars/layui/2.5.6/layui.js}" src="" type="text/javascript"></script>
+    <script th:src="@{/webjars/jquery/3.5.1/jquery.js}" src="" type="text/javascript"></script>
+    <script type="text/javascript" src="../../js/xadmin.js" th:src="@{/adminStatic/js/xadmin.js}"></script>
+    <script type="text/javascript" src="../../js/xadmin.js" th:src="@{/adminStatic/js/MyLayuiUtils.js}"></script>
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        .layui-form-item {
+            margin-bottom: 0;
+        }
+        .layui-form-pane .layui-form-label {
+            max-width: 100px;
+        }
+        .layui-form-item .layui-input-inline {
+            width: 180px;
+        }
+        .layui-form-pane .layui-form-label {
+            padding: 9px 15px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body " style="padding-bottom: 0;">
+                    <form class="layui-form layui-col-space5 layui-form-pane" id="form">
+                        <!-- 根据渠道名查询 -->
+                        <div class="layui-inline layui-show-xs-block layui-form-item">
+                            <label class="layui-form-label">收费项</label>
+                            <div class="layui-input-inline">
+                                <select name="itemName" lay-search>
+                                    <option value="">选择或输入收费项</option>
+                                    <option th:value="${item.id}" th:each="item:${itemList}" th:text="${item.chargeName}"></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline layui-show-xs-block">
+                            <button class="layui-btn layui-btn-normal" id="searchBtn" type="button" lay-filter="sreach">
+                                <i class="layui-icon">&#xe615;</i>
+                            </button>
+                            <input class="layui-btn layui-btn-normal layui-icon" type="reset" value="&#xe669;"/>
+                        </div>
+                    </form>
+                </div>
+                <div class="layui-card-body ">
+                    <table id="listInfo" lay-filter="listInfo"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+<script>
+    layui.use(['table','form', 'upload', 'laydate'],
+        function () {
+            var table = layui.table,
+                layer = layui.layer,
+                form = layui.form,
+                upload = layui.upload,
+                laydate = layui.laydate;
+
+            var page, limit, totalCount;
+
+            // 开始日期选择
+            laydate.render({
+                elem: '#start'
+                , type: 'date'
+            });
+
+            // 结束日期选择
+            laydate.render({
+                elem: '#end'
+                , type: 'date'
+            });
+
+            // 初始调用表格加载方法
+            loadFunction("getDataByPage");
+
+            /**
+             * 绑定查询按钮
+             */
+            $("#searchBtn").click(function() {
+                var start = $("input[name='start']").val();
+                var end = $("input[name='end']").val();
+                // 如果只选择结束时间不选择开始时间, 则参数有误, 不可进行查询
+                if(!start && end) {
+                    layer.open({
+                        title: '错误消息'
+                        , content: '抱歉…不可以只选择结束时间不选择开始时间！'
+                        , shade: 0.1
+                        , icon: 5
+                        , anim: 6
+                        , closeBtn: 0
+                    })
+                    return;
+                }
+                // 获取表单数据
+                var sendData = $("#form").serialize();
+                // 重新调用表格加载方法
+                loadFunction("getDataByPage?" + sendData)
+            })
+
+            /**
+             * 加载表格方法
+             * @param url
+             */
+            function loadFunction(url) {
+                //第一个实例
+                table.render({
+                    elem: '#listInfo'
+                    , height: 'full-115'
+                    , url: url //数据接口
+                    , defaultToolbar: ['filter']
+                    , loading: true
+                    , limit: 20
+                    , title: '渠道信息'
+                    , toolbar: true
+                    , page: {
+                        layout: ['limit', 'count', 'prev', 'page', 'next', 'skip', 'refresh'] //自定义分页布局
+                        ,groups: 5 //只显示 5 个连续页码
+                        ,theme: '#1E9FFF'
+                    }
+                    , cols:
+                        [
+                            [ //表头
+                                { type: 'numbers', title: '序号', width: 60  }
+                                , {field: 'id', title: '主键标识', width: 120, hide: true}
+                                , {field: 'chargeId', title: '收费项ID', hide: true}
+                                , {field: 'itemName', title: '收费项名称'}
+                                , {field: 'buildingNum', title: '房间信息', templet:'<div>{{d.buildingNum}}号楼{{d.unitNum}}单元{{d.houseNum}}</div>'}
+                                , {field: 'clientName', title: '户主姓名'}
+                                , {field: 'payType', title: '缴费方式'}
+                                , {field: 'payMoney', title: '缴费金额', templet: '<div>{{d.payMoney / 100}}元</div>'}
+                                , {field: 'payDate', title: '收费时间'}
+                                , {field: 'chargePerson', title: '收费人员'}
+                            ]
+                        ]
+                })
+            }
+
+            //头工具栏事件
+            table.on('toolbar(listInfo)', function (obj) {
+                var checkStatus = table.checkStatus(obj.config.id);
+                var data = checkStatus.data;
+                var selectCount = data.length;      //获取选中行
+                var dataId = getIds(data);          //data是选中的所有数据，得到的是一个数组，将这个数组传入getIds方法进行处理
+                // 调用方法将表头进行处理(导出时会用到)
+                // Layui中使用jQuery选择器的方式：$("th")即可获取页面中所有的表格表头(切记页面只有一个表格的情况下才可用)
+                var title = handleTitleDataRemoveCheckbox($("th"));
+                // 获取当前的查询数据(导出时会用到)
+                var queryData = $("#form").serialize();
+                switch (obj.event) {
+                    case 'add':
+                        addInfo("channel");
+                        break;
+                    case 'edit':
+                        $.get(
+                            'selectInputKeyById?id='+dataId,
+                            function(res) {
+                                if(res.code == "200") {
+                                    updateInfo(selectCount, dataId, "channel");
+                                } else if(res.code == "207") {
+                                    layer.confirm(res.msg, {
+                                        btn: ['确定'] //按钮
+                                        , icon: 7
+                                        , anim: 6
+                                    }, function () {
+                                        // 关闭提示页
+                                        layer.closeAll();
+                                    })
+                                }
+                            }
+                        )
+                        break;
+                    //自定义头工具栏右侧图标 - 提示
+                    case 'del':
+                        // 删除重要信息
+                        deleteInfo(selectCount, dataId, "deleteInfo?delIds=" + dataId);
+                        break;
+                    // 导出本页
+                    case 'exportExcel':
+                        // 调用判断是否可以导出的方法
+                        var load = layer.load(1, {shade: false}); //0代表加载的风格，支持0-2
+                        // 执行导出
+                        findPageExportData(title, "getPageExportData", queryData, page, limit, load);
+                        break;
+                    // 导出全部
+                    case 'exportExcelAll':
+                        if(totalCount > 5000) {
+                            layer.confirm('检测到您要导出的数据已经达到<span style="color: red">'+totalCount+'条</span>, ' +
+                                '大量数据导出会降低系统性能, ' +
+                                '为了节省您的宝贵时间推荐您进行查询筛选后使用<span style="color: red">导出本页</span>功能, ' +
+                                '如果执意导出全部请点击继续…', {
+                                btn: ['继续导出', '取消导出'] //按钮
+                                , shade: 0.3
+                                , anim: 6
+                                , closeBtn: 0
+                                , title: '温馨提示'
+                            }, function (index) {
+                                // 确定
+                                layer.close(index);
+                                // 导出全部数据(需要进行查询)
+                                var load = layer.load(1, {shade: false}); //0代表加载的风格，支持0-2
+                                // 查询数据进行导出
+                                findAllExportData(title, "getAllExportData", queryData, load);
+                            }, function () {
+                                // 取消
+                            })
+                        } else {
+                            // 导出全部数据(需要进行查询)
+                            var load = layer.load(1, {shade: false}); //0代表加载的风格，支持0-2
+                            // 查询数据进行导出
+                            findAllExportData(title, "getAllExportData", queryData, load);
+                        }
+                        break;
+                }
+            });
+
+            //行内工具条
+            table.on('tool(listInfo)', function(obj){
+                switch(obj.event){
+                    case 'downloadModel':
+                        // 获取本条采购信息的数据
+                        var channelId = obj.data.id;
+                        // 下载模板,后台自动生成模板文件
+                        window.location.href = getPath() + "/channel/downloadModel/" + channelId;
+                        break;
+                }
+            });
+        });
+</script>
+</html>

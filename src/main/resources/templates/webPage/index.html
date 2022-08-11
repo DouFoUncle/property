@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>黄金水岸小区</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+<!--    <link rel="shortcut icon" th:href="@{/webStatic/img/favicon.ico}" href="img/favicon.ico" type="image/x-icon">-->
+    <link rel="apple-touch-icon" th:href="@{/webStatic/img/apple-touch-icon.png}" href="img/apple-touch-icon.png">
+    <link rel="apple-touch-icon" th:href="@{/webStatic/img/apple-touch-icon-72x72.png}" sizes="72x72"
+          href="img/apple-touch-icon-72x72.png">
+<!--    <link rel="apple-touch-icon" th:href="@{/webStatic/img/apple-touch-icon-114x114.png}" sizes="114x114"-->
+<!--          href="img/apple-touch-icon-114x114.png">-->
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webStatic/css/bootstrap.css}" href="css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" th:href="@{/webStatic/fonts/font-awesome/css/font-awesome.css}"
+          href="fonts/font-awesome/css/font-awesome.css">
+
+    <link rel="stylesheet" type="text/css" th:href="@{/webStatic/css/style.css}" href="css/style.css">
+    <link rel="stylesheet" type="text/css" th:href="@{/webStatic/css/nivo-lightbox/nivo-lightbox.css}"
+          href="css/nivo-lightbox/nivo-lightbox.css">
+    <link rel="stylesheet" type="text/css" th:href="@{/webStatic/css/nivo-lightbox/default.css}"
+          href="css/nivo-lightbox/default.css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        #webOut:hover, #editPhone:hover {
+            cursor: pointer;
+            text-decoration: underline;
+            color: rgba(255,255,255, .9);
+        }
+        .text_span {
+            display: inline-block;
+            white-space: nowrap;
+            min-width: 500px;
+            max-width: 500px;
+            overflow: hidden;
+            text-overflow:ellipsis;
+        }
+    </style>
+</head>
+<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+
+<nav id="menu" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1"><span class="sr-only">Toggle navigation</span> <span
+                    class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span></button>
+            <a class="navbar-brand page-scroll" href="#page-top" style="font-size: 28px">黄金水岸小区</a>
+        </div>
+
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#header" class="page-scroll">首页标题</a></li>
+                <li><a href="javascript:;" id="buyHouse" class="page-scroll">房屋购买</a></li>
+                <li><a href="javascript:;" id="buyCarPark" class="page-scroll">车位购买</a></li>
+                <li><a href="#notice" class="page-scroll">公告通知</a></li>
+                <li><a href="#access" class="page-scroll">出入登记</a></li>
+                <li><a href="#services" class="page-scroll">投诉服务</a></li>
+                <li><a href="#about" class="page-scroll">报修服务</a></li>
+                <li><a href="#testimonials" class="page-scroll">关于我们</a></li>
+                <li><a th:href="@{system/toLoginPage}" target="_blank" class="page-scroll">网站后台</a></li>
+            </ul>
+        </div>
+
+    </div>
+</nav>
+<!-- 头部 -->
+<header id="header">
+    <div class="intro">
+        <div class="overlay">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8 col-md-offset-2 intro-text">
+                        <h1 style="font-size: 52px">欢迎回家！</h1>
+                        <p> 生活是无字的书，眼光敏锐的人看得见精彩的词句；书是有字的生活，感情丰富的人才能深刻领悟。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- 获取接触部分 -->
+<div id="get-touch">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-md-6 col-md-offset-1">
+                <h3 style="font-size: 20px">如果需要报修或投诉服务，请先登录！</h3>
+                <p>登录时只需输入您在物业处登记的姓名与电话即可！</p>
+            </div>
+            <div class="col-xs-12 col-md-4 text-center">
+                <a th:if="${session.webUser == null}" class="btn btn-custom btn-lg page-scroll" id="toLogin">立即登录</a>
+                <div style="font-size: 16px; height: 64px;" th:if="${session.webUser != null}">
+                    <div>
+
+                        <div style="width: 250px; text-align: center; margin: 0 auto; line-height: 30px">
+                            已登录！欢迎您：
+                            <input type="hidden" th:value="${session.webUser.id}" id="userId">
+                            <input type="hidden" th:value="${session.webUser.userName}" id="userName">
+                            <span th:text="${session.webUser.userName}"></span>&emsp;
+                        </div>
+                        <div style="width: 150px; text-align: center; margin: 0 auto; line-height: 30px">
+                            <span id="editPhone">修改信息</span>&nbsp;
+                            <span id="webOut">退出</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 公告通知 -->
+<div id="notice">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-md-6">
+                <div class="about-text">
+                    <h2 style="font-size: 30px;">
+                        公告通知
+                        <button type="button" class="btn btn-primary" id="createNotice" style="float: right;">
+                            发表公告
+                        </button>
+                        <button type="button" class="btn btn-primary" id="meNotice" style="float: right; margin-right: 8px">
+                            我的公告
+                        </button>
+                        <button type="button" class="btn btn-primary" id="meComment" style="float: right; margin-right: 8px">
+                            我的评论
+                        </button>
+                        <div style="clear: both"></div>
+                    </h2>
+                    <div class="col-lg-12 col-sm-12 col-xs-12" style="padding-left: 0;
+                            max-height: 245px; min-height: 245px">
+                        <div class="panel-group" id="accordion">
+                            <div class="panel panel-default" th:each="notice, eachStatus : ${noticeInfo}">
+                                <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                        <a data-toggle="collapse" data-parent="#accordion"
+                                           th:href="'#title'+${notice.id}" style="font-size: 15px">
+                                            [[${notice.title}]]&emsp;-&emsp;
+                                            <span style="font-size: 14px">[[${notice.createDate}]]</span>
+                                        </a>
+                                    </h4>
+                                </div>
+                                <div th:id="'title'+${notice.id}" th:class="${eachStatus.index == 0 ?
+                                            'panel-collapse collapse in' : 'panel-collapse collapse'}">
+                                    <div class="panel-body" style="padding: 8px 12px;">
+                                        <span th:text="${notice.content}" class="text_span"></span>
+                                        <div style="margin-top: 2px">
+                                            <button type="button" class="btn btn-primary noticeInfoBtn" th:data-id="${notice.id}">
+                                                查看详细
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <nav aria-label="Page navigation">
+                            <input type="hidden" name="currPage" th:value="${currPage}">
+                            <input type="hidden" name="totalPage" th:value="${totalPage}">
+                            <ul class="pagination">
+                                <li id="prev">
+                                    <a href="javascript:;" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <li th:each="page : ${pagesList}" th:class="${currPage == page ? 'active pageNum' : 'pageNum'}">
+                                    <a href="javascript:;">[[${page}]]</a>
+                                </li>
+                                <li id="next">
+                                    <a href="javascript:;" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6">
+                <img th:src="@{/webStatic/img/new_index.jpg}" class="img-responsive" alt="" width="585" height="350">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 出入登记 -->
+<div id="access">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-md-6">
+                <img th:src="@{/webStatic/img/portfolio/05-large.jpg}" class="img-responsive" alt="" width="585"
+                     height="350">
+            </div>
+            <div class="col-xs-12 col-md-6">
+                <div class="about-text">
+                    <h2 style="font-size: 30px">出入登记</h2>
+                    <div class="col-lg-12 col-sm-12 col-xs-12" style="padding-left: 0;">
+                        <form role="form" style="position: relative; top: 0">
+                            <div class="input-group form-group">
+                                <span class="input-group-addon">您的姓名</span>
+                                <input type="text" class="form-control" name="accessUserName" placeholder="请输入您的姓名"
+                                       aria-describedby="basic-addon1"
+                                       th:value="${session.webUser != null ? session.webUser.userName : ''}">
+                            </div>
+                            <div class="input-group form-group">
+                                <span class="input-group-addon">联系电话</span>
+                                <input type="text" class="form-control" name="accessPhone" placeholder="请输入您的联系电话"
+                                       aria-describedby="basic-addon1"
+                                       th:value="${session.webUser != null ? session.webUser.phone : ''}">
+                            </div>
+                            <div class="input-group form-group">
+                                <span class="input-group-addon">登记类型</span>
+                                <div class="form-group">
+                                    <select class="form-control" id="accessType" name="type" autocomplete="off">
+                                        <option value="">请选择类型</option>
+                                        <option value="0">进入</option>
+                                        <option value="1">出去</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <textarea class="form-control" rows="5" name="desc" placeholder="请描述您出/入登记事由"
+                                          style="resize: none"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button id="accessBtn" type="button" class="btn btn-primary" style="position:absolute; right: 0px">
+                                    提交信息
+                                </button>
+                                <button id="toAccessPage" type="button" class="btn btn-primary"
+                                        style="position:absolute; right: 95px">
+                                    我的登记记录
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 投诉服务 -->
+<div id="services">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-md-6">
+                <div class="about-text">
+                    <h2 style="font-size: 30px">投诉服务</h2>
+                    <div class="col-lg-12 col-sm-12 col-xs-12" style="padding-left: 0;">
+                        <form role="form" style="position: relative; top: 0">
+                            <div class="input-group form-group">
+                                <span class="input-group-addon">您的姓名</span>
+                                <input type="text" class="form-control" name="complaintUserName" placeholder="请输入您的姓名"
+                                       aria-describedby="basic-addon1"
+                                       th:value="${session.webUser != null ? session.webUser.userName : ''}">
+                            </div>
+                            <div class="input-group form-group">
+                                <span class="input-group-addon">联系电话</span>
+                                <input type="text" class="form-control" name="complaintPhone" placeholder="请输入您的联系电话"
+                                       aria-describedby="basic-addon1"
+                                       th:value="${session.webUser != null ? session.webUser.phone : ''}">
+                            </div>
+                            <div class="form-group">
+                                <textarea class="form-control" rows="5" name="complaintInfo" placeholder="请说明您要投诉的内容"
+                                          style="resize: none"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button id="complaintBtn" type="button" class="btn btn-primary" style="position:absolute; right: 0px">
+                                    提交信息
+                                </button>
+                                <button id="toComplaint" type="button" class="btn btn-primary"
+                                        style="position:absolute; right: 95px">
+                                    我的投诉
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-md-6">
+                <img th:src="@{/webStatic/img/new_index.jpg}" class="img-responsive" alt="" width="585" height="350">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 报修服务 -->
+<div id="about">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-md-6">
+                <img th:src="@{/webStatic/img/portfolio/01-large.jpg}" class="img-responsive" alt="" width="585"
+                     height="350">
+            </div>
+            <div class="col-xs-12 col-md-6">
+                <div class="about-text">
+                    <h2 style="font-size: 30px">报修服务</h2>
+                    <div class="col-lg-12 col-sm-12 col-xs-12" style="padding-left: 0;">
+                        <form role="form" style="position: relative; top: 0">
+                            <div class="input-group form-group">
+                                <span class="input-group-addon">您的姓名</span>
+                                <input type="text" class="form-control" name="repairUserName" placeholder="请输入您的姓名"
+                                       aria-describedby="basic-addon1"
+                                       th:value="${session.webUser != null ? session.webUser.userName : ''}">
+                            </div>
+                            <div class="input-group form-group">
+                                <span class="input-group-addon">联系电话</span>
+                                <input type="text" class="form-control" name="repairPhone" placeholder="请输入您的联系电话"
+                                       aria-describedby="basic-addon1"
+                                       th:value="${session.webUser != null ? session.webUser.phone : ''}">
+                            </div>
+                            <div class="form-group">
+                                <textarea class="form-control" rows="5" name="repairInfo" placeholder="请描述您要报修的详细信息"
+                                          style="resize: none"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button id="repairBtn" type="button" class="btn btn-primary" style="position:absolute; right: 0px">
+                                    提交信息
+                                </button>
+                                <button id="toRepair" type="button" class="btn btn-primary"
+                                        style="position:absolute; right: 95px">
+                                    我的报修
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 关于我们 -->
+<div id="testimonials">
+    <div class="container">
+        <div class="section-title">
+            <h2>关于我们</h2>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-md-6">
+                <img th:src="@{/webStatic/img/portfolio/06-large.jpg}" class="img-responsive" alt="" width="585" height="350">
+            </div>
+            <div class="col-xs-12 col-md-6">
+                <div class="about-text">
+                    <h2 style="font-size: 28px">黄金水岸小区</h2>
+                    <div class="col-lg-12 col-sm-12 col-xs-12" style="padding-left: 0;text-indent: 2em">
+                        黄金水岸小区内部环境典雅幽静，绿化多，通过小区道路的合理组织，休闲设施的精心安排，提供自然、舒适的居住环境。
+                        周边配套齐全，设施完备，物业管理完善，保安24小时值班，住户素质高。社区主流健康向上，社区风气良好，邻里关系和谐。
+                        基础设施健全，周围商圈多，购物，就医，娱乐等方便快捷。
+                        为一个集生态环境、人文环境、信息化和管理控制自动化等优质服务为一体的高档个性化住宅小区。
+                        环境优美，丽水成天的风景给予了回归家庭、回归私域的生活体验。房屋楼层分布均匀，室内装修豪华气派，视眼非常宽广，采光较好。
+                        坐北朝南，整体体现现代简约风格，建筑设计线条明朗，色彩大气简约，采用中间高、东西低的建筑高度，使小区建筑形态层次分明，
+                        富有强烈韵律感。居于此，拥城市繁华、享离尘静谧，自由掌控生活，占核心享未来。
+                        <br/><br/><br/>
+                        价格走势：本月均价：33123元/平米，环比上月上涨20.86%，小区共有出售房源0套，出租房源0套，服务该小区的经纪人有0位
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 底部区域 -->
+<div id="footer" style="background: #FFF">
+    <div class="container text-center">
+        <p>Copyright &copy; 2020.Mr.Wang All rights reserved.</p>
+    </div>
+</div>
+<script type="text/javascript" th:src="@{/webStatic/js/jquery.1.11.1.js}" src="js/jquery.1.11.1.js"></script>
+<script type="text/javascript" th:src="@{/webStatic/js/bootstrap.js}" src="js/bootstrap.js"></script>
+<script type="text/javascript" th:src="@{/webStatic/js/SmoothScroll.js}" src="js/SmoothScroll.js"></script>
+<script type="text/javascript" th:src="@{/webStatic/js/nivo-lightbox.js}" src="js/nivo-lightbox.js"></script>
+<script type="text/javascript" th:src="@{/webStatic/js/jqBootstrapValidation.js}"
+        src="js/jqBootstrapValidation.js"></script>
+<script type="text/javascript" th:src="@{/webStatic/js/contact_me.js}" src="js/contact_me.js"></script>
+<script type="text/javascript" th:src="@{/webStatic/js/main.js}" src="js/main.js"></script>
+<script type="text/javascript" th:src="@{/webStatic/layui/layui.js}" src="js/main.js"></script>
+<script type="text/javascript" th:src="@{/webStatic/js/myIndex.js}" src="js/main.js"></script>
+<script type="text/javascript" th:src="@{/adminStatic/js/MyLayuiUtils.js}" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+	
+<head>
+		<meta charset="utf-8">
+		 <title>登录页面-</title>
+		<link rel="stylesheet" th:href="@{/webStatic/css/reset.css}" href="css/reset.css" />
+		<link rel="stylesheet" th:href="@{/webStatic/css/common.css}" href="css/common.css" />
+		<script type="text/javascript" th:src="@{/webStatic/layui/layui.js}" src="js/main.js"></script>
+		<link rel="stylesheet" th:href="@{/webStatic/css/font-awesome.min.css}" href="css/font-awesome.min.css" />
+	</head>
+	<body>
+		<div class="wrap login_wrap" style="background-size: cover">
+			<div class="content">
+				<div class="logo"></div>
+				<div class="login_box" style="height: 300px">
+					
+					<div class="login_form">
+						<div class="login_title">
+							登录
+						</div>
+						<form action="#" method="post">
+							
+							<div class="form_text_ipt">
+								<input name="userName" type="text" placeholder="请输入姓名">
+							</div>
+							<div class="form_text_ipt" style="margin-bottom: 30px">
+								<input name="phone" type="text" placeholder="请输入手机号">
+							</div>
+							<div class="form_btn">
+								<button type="button" id="loginBtn" style="margin-bottom: 30px">登录</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" th:src="@{/webStatic/js/jquery.min.js}" src="js/jquery.min.js" ></script>
+		<script type="text/javascript" th:src="@{/webStatic/js/common.js}" src="js/common.js" ></script>
+		<div style="text-align:center;">
+
+</div>
+	</body>
+</html>

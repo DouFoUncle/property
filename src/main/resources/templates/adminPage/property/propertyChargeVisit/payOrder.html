@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>新增</title>
+    <link rel="stylesheet" th:href="@{/adminStatic/layui/css/layui.css}">
+    <script th:src="@{/webjars/layui/2.5.6/layui.js}" src="" type="text/javascript"></script>
+    <script th:src="@{/webjars/jquery/3.5.1/jquery.js}" src="" type="text/javascript"></script>
+    <script type="text/javascript" src="../../js/xadmin.js" th:src="@{/adminStatic/js/MyLayuiUtils.js}"></script>
+    <style>
+        html {
+            height: 100%;
+        }
+
+        .layui-form-pane .layui-form-text .layui-textarea {
+            min-height: 80px;
+            max-height: 80px;
+        }
+
+        .div_show {
+            transform: translate(-2000px);
+            transition: all 0.8s;
+        }
+
+        .div_hide {
+            transform: translate(2000px);
+            transition: all 1.5s;
+        }
+
+        .photo-viewer {
+            margin: 50px 0;
+            text-align: center;
+        }
+
+        .img-reveal {
+            display: inline-block;
+            margin: 0px 8px;
+        }
+
+        .layui-btn {
+            height: 34px;
+            line-height: 34px;
+        }
+        .layui-form-select dl {
+            max-height: 195px;
+        }
+    </style>
+</head>
+<body style="height: 100%;padding: 15px;box-sizing: border-box">
+
+<!--表单-->
+<form class="layui-form layui-form-pane form-info addForm" action="" th:add-url="${addUrl}">
+    <input type="hidden" readonly name="chargeId" th:value="${chargeId}">
+    <input type="hidden" readonly name="buildingNum" th:value="${obj.buildingNum}">
+    <input type="hidden" readonly name="unitNum" th:value="${obj.unitNum}">
+    <input type="hidden" readonly name="houseNum" th:value="${obj.houseNum}">
+    <input type="hidden" readonly name="clientName" th:value="${obj.userName}">
+    <input type="hidden" readonly name="itemName" th:value="${obj.itemName}">
+    <input type="hidden" readonly name="payMoney" th:value="${obj.price}">
+    <div id="product_info" style="width:100%">
+        <!-- 房间信息 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">房间信息</label>
+            <div class="layui-input-inline">
+                <input type="text" name="showHouseInfo" class="layui-input" readonly th:value="${obj.buildingNum}+'号楼'+${obj.unitNum}+'单元'+${obj.houseNum}">
+            </div>
+        </div>
+        <!-- 房间信息 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">缴费金额</label>
+            <div class="layui-input-inline">
+                <input type="text" name="showPayPrice" readonly th:value="${obj.price / 100}+'元'" class="layui-input">
+            </div>
+        </div>
+        <!-- 住户姓名 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">住户姓名</label>
+            <div class="layui-input-inline">
+                <input type="text" name="showUserName" readonly  th:value="${obj.userName}" class="layui-input">
+            </div>
+        </div>
+        <!-- 支付方式 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">支付方式</label>
+            <div class="layui-input-inline">
+                <input type="radio" name="payType" value="现金" title="现金" checked="">
+                <input type="radio" name="payType" value="支付宝" title="支付宝">
+                <input type="radio" name="payType" value="微信" title="微信">
+            </div>
+        </div>
+        <!-- 收费人员 -->
+        <div class="layui-form-item">
+            <label class="layui-form-label">收费人员</label>
+            <div class="layui-input-inline">
+                <input type="text" name="chargePerson" lay-verify="required" placeholder="收费人员 (必填)" autocomplete="off"
+                       class="layui-input">
+            </div>
+        </div>
+    </div>
+    
+    <div class="content-input" style="position: absolute; left: 15px; bottom: 15px;">
+        <input type="button" value="提交" name="submit" class="layui-btn addBtn layui-btn-normal">
+        <input type="reset" class="layui-btn layui-btn-normal" value="清空">
+    </div>
+</form>
+
+
+<script>
+    layui.use(['form', 'upload', 'laydate'], function () {
+        var layer = layui.layer;
+
+        var lock = true;
+
+        /**
+         * 绑定回车事件
+         */
+        $(document).keypress(function (e) {
+            //如果当前有类似layer.alert的窗体，点击最上层的确定按钮，并且取消所有焦点
+            if ($('.layui-layer-btn0').length > 0) {
+                $('.layui-layer-btn0').eq($('.layui-layer-btn0').length - 1)[0].click();
+                $("*").blur();
+            }
+        });
+
+        /**
+         * 单击提交事件
+         */
+        $(".addBtn").click(function () {
+            if (lock) {      //判断是否重复提交
+                lock = true;
+                //验证数据
+                var flag = isVerifyDate();
+                // 如果flag不为空就是验证不通过
+                if(flag) {
+                    layer.confirm(flag, {
+                        btn: ['确定']  //按钮
+                        , icon: 5
+                        , anim: 6
+                    });
+                    return;
+                }
+                //获取表单数据
+                var addData = $(".addForm").serializeArray();
+                //获取提交的url
+                var url = $(".addForm").attr("add-url");
+                // 将数据转换为对象, 注意发送时将对象转为JSON字符串
+                var jsonObj={};
+                $(addData).each(function(){
+                    jsonObj[this.name]=this.value;
+                });
+                console.log(jsonObj)
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    async: false,
+                    contentType : 'application/json;charset=utf-8', //设置请求头信息
+                    data: JSON.stringify(jsonObj),
+                    success: function(rollData) {
+                        if (rollData.code == "0") {
+                            layer.confirm(rollData.msg, {
+                                btn: ['确定']  //按钮
+                                , icon: 6
+                            }, function () {
+                                window.parent.location.reload();    //刷新父页面
+                            });
+                        } else {
+                            layer.confirm(rollData.msg, {
+                                btn: ['确定']  //按钮
+                                , icon: 5
+                                , anim: 6
+                            }, function (index) {
+                                lock = true;
+                                layer.close(index);
+                            });
+                        }
+                    },
+                    error: function(res) {
+                        layer.confirm('啊哦！访问出问题了！快找开发狗算账！', {
+                            btn: ['确定']  //按钮
+                            , icon: 5
+                            , anim: 6
+                        }, function (index) {
+                            lock = true;
+                            layer.close(index);
+                        });
+                    }
+                })
+            }
+        });
+
+        /**
+         * 验证数据方法
+         */
+        function isVerifyDate() {
+            // 获取所有数据
+            var chargePerson = $("input[name='chargePerson']").val();
+            // 非空验证
+            if(!chargePerson) {
+                return "请认真点, 将所有必填数据填写完整! ";
+            }
+        }
+    });
+</script>
+</body>
+</html>
