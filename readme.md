@@ -18,9 +18,7 @@
 
 SpringBoot + MyBatis + Thymeleaf + Layui +  jQuery + JavaScript +  MySQL 
 
-#### 非免费开源
-
-#### 需要加Q：943701114，可供学生毕设参考使用，再次强调，非免费开源，非诚勿扰
+#### 参考使用说明文档
 
 #### 项目视频地址
 
