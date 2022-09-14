@@ -1,7 +1,7 @@
 # 基于SpringBoot的小区物业系统
 
 
-#### 
+
 
 #### 介绍
 
@@ -12,17 +12,17 @@
 整体架构采用：SpringBoot + MyBatis + MySQL数据库。
 ```
 
-
-
-#### 系统技术栈
-
-SpringBoot + MyBatis + Thymeleaf + Layui +  jQuery + JavaScript +  MySQL 
-
-
+<br/>
 
 #### 仓库代码为压缩版
 
 #### 项目非免费开源，适用于毕业设计，需要请加Q：943701114，非诚勿扰
+
+<br/>
+
+#### 系统技术栈
+
+SpringBoot + MyBatis + Thymeleaf + Layui +  jQuery + JavaScript +  MySQL 
 
 
 
